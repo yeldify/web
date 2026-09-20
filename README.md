@@ -75,6 +75,21 @@ VITE_API_URL=http://localhost:8000 npm run dev
 
 > Sem a API no ar, o app cai para os mocks de `src/mocks/` e segue 100% funcional.
 
+### Rodando com Docker
+
+```bash
+# Subir a stack completa (PostgreSQL + API + Web) na raiz do workspace:
+docker compose up --build
+# → Web: http://localhost:5173
+```
+
+A imagem de produção é **multi-stage**: builda o front (`tsc + vite`) e entrega via **Nginx**, que faz proxy de
+`/api` para o serviço `api` (mesmo contrato do proxy de dev). Publicada no **GHCR** em todo push em `main`:
+
+```bash
+docker pull ghcr.io/hialth/web
+```
+
 ## Rotas
 
 | Rota | Tela | GlassDock |
