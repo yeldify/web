@@ -95,6 +95,7 @@ export interface EditarTransacaoPayload {
   pendente?: boolean;
   valor?: number;
   data?: string;
+  budget_id?: string;
 }
 
 export interface CriarOrcamentoPayload {
