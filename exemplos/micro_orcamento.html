@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeldify - Orçamentos (Layout Blindado)</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #F4F1EA; 
+            --texto-principal: #1e2f23; 
+            --texto-mutado: #6B6F67;
+            --linha-divisoria: rgba(30, 47, 35, 0.12);
+            
+            --verde-terroso: #607744;
+            --dourado-suave: #9c8335;
+            --alerta-vermelho: #9B453A; 
+            --alerta-amarelo: #B5812A;  
+            
+            --fonte-ui: 'Sora', sans-serif;
+            --fonte-dados: 'IBM Plex Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-base); color: var(--texto-principal); font-family: var(--fonte-ui); padding: 40px; padding-bottom: 140px; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* HEADER */
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+        .logo h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.5px; }
+        .subtle-switcher { display: flex; gap: 20px; font-size: 0.75rem; font-weight: 600; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 1px; }
+        .subtle-switcher span { cursor: pointer; padding-bottom: 4px; position: relative; }
+        .subtle-switcher span.active { color: var(--texto-principal); }
+        .subtle-switcher span.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-color: var(--verde-terroso); border-radius: 2px; }
+
+        /* HEADER DA SEÇÃO & BOTÕES HARMONIZADOS */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--linha-divisoria); }
+        .section-header h2 { font-size: 1.05rem; font-weight: 500; color: var(--texto-principal); }
+        
+        .header-actions { display: flex; gap: 16px; align-items: center; }
+        
+        /* Botões padronizados e sutis alinhados ao Papel Pólen */
+        .btn-text-action { 
+            background: transparent; border: none; color: var(--texto-mutado); 
+            font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; 
+            letter-spacing: 1px; cursor: pointer; transition: color 0.2s; padding: 4px 0; position: relative;
+        }
+        .btn-text-action:hover { color: var(--texto-principal); }
+        .btn-text-action.active-batch { color: var(--alerta-vermelho); }
+
+        .btn-primary-action {
+            background: transparent; border: 1px solid rgba(30,47,35,0.25); color: var(--texto-principal);
+            font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; padding: 6px 16px; border-radius: 16px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-primary-action:hover { border-color: var(--verde-terroso); color: var(--verde-terroso); background: rgba(96,119,68,0.04); }
+
+        /* LISTA DE ORÇAMENTOS & GRID BLINDADO */
+        .budgets-list-container { display: flex; flex-direction: column; margin-bottom: 32px; }
+        
+        .budget-row {
+            border-bottom: 1px solid var(--linha-divisoria);
+            transition: background-color 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .budget-row:hover { background-color: rgba(30, 47, 35, 0.02); }
+        .budget-row.active { background-color: rgba(96, 119, 68, 0.04); }
+
+        /* Grid flexível e blindado contra quebras */
+        .budget-main-line {
+            padding: 18px 0;
+            display: grid;
+            grid-template-columns: 1.6fr 2fr 1.2fr;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* Quando entra no modo lote, insere a coluna do checkbox suavemente */
+        body.batch-mode .budget-main-line {
+            grid-template-columns: 32px 1.5fr 2fr 1.2fr;
+        }
+
+        .batch-checkbox-wrapper { display: none; align-items: center; }
+        body.batch-mode .batch-checkbox-wrapper { display: flex; }
+
+        .batch-checkbox { appearance: none; width: 14px; height: 14px; border: 1px solid var(--texto-mutado); border-radius: 3px; background: transparent; cursor: pointer; transition: all 0.2s; }
+        .batch-checkbox:checked { background: var(--verde-terroso); border-color: var(--verde-terroso); }
+
+        .b-meta { display: flex; align-items: center; gap: 10px; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .dot-green { background-color: var(--verde-terroso); }
+        .dot-red { background-color: var(--alerta-vermelho); }
+        .dot-yellow { background-color: var(--alerta-amarelo); }
+        .b-name { font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .b-progress-area { display: flex; align-items: center; gap: 16px; width: 100%; }
+        .progress-track { background-color: var(--linha-divisoria); height: 5px; border-radius: 3px; width: 100%; overflow: hidden; flex-grow: 1; }
+        .progress-fill { height: 100%; border-radius: 3px; }
+        .fill-green { background-color: var(--verde-terroso); }
+        .fill-red { background-color: var(--alerta-vermelho); }
+        .fill-yellow { background-color: var(--alerta-amarelo); }
+
+        .b-numbers-area {
+            font-family: var(--fonte-dados); font-size: 0.85rem; text-align: right;
+            display: flex; align-items: center; justify-content: flex-end; gap: 16px;
+            color: var(--texto-mutado);
+        }
+        .b-numbers-area strong { color: var(--texto-principal); font-weight: 500; }
+
+        /* PROGRESSIVE REVEAL: Ações ocultas no Hover */
+        .row-actions { display: flex; align-items: center; gap: 10px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .budget-row:hover .row-actions { opacity: 1; pointer-events: all; }
+        body.batch-mode .row-actions { display: none !important; } /* Oculta ações individuais no modo lote */
+        
+        .action-icon { width: 14px; height: 14px; color: var(--texto-mutado); cursor: pointer; transition: color 0.2s; }
+        .action-icon:hover { color: var(--verde-terroso); }
+
+        /* BARRA FLUTUANTE DE AÇÕES EM LOTE */
+        .batch-toolbar {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: var(--texto-principal); color: var(--bg-base); padding: 12px 24px; border-radius: 20px;
+            display: flex; align-items: center; gap: 24px; font-size: 0.8rem; z-index: 990;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0; pointer-events: none;
+        }
+        .batch-toolbar.visible { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: all; }
+        .btn-batch-action { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 6px 14px; border-radius: 12px; cursor: pointer; font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: background 0.2s; }
+        .btn-batch-action:hover { background: rgba(255,255,255,0.25); }
+
+        /* ACORDEÃO DE TRANSAÇÕES */
+        .budget-accordion { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); background-color: rgba(255, 255, 255, 0.4); }
+        .budget-row.active .budget-accordion { max-height: 300px; padding: 16px 20px 20px 20px; border-top: 1px solid var(--linha-divisoria); }
+        .acc-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-mutado); margin-bottom: 10px; font-weight: 600; }
+        .acc-list { display: flex; flex-direction: column; gap: 8px; }
+        .acc-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; padding-bottom: 6px; border-bottom: 1px solid rgba(30,47,35,0.05); }
+        .acc-item:last-child { border-bottom: none; }
+        .acc-info { display: flex; gap: 16px; color: var(--texto-principal); }
+        .acc-date { font-family: var(--fonte-dados); color: var(--texto-mutado); font-size: 0.75rem; width: 50px; }
+        .acc-valor { font-family: var(--fonte-dados); font-weight: 500; }
+
+        /* SEÇÃO DE ARQUIVADOS */
+        .archived-section-wrapper { border-top: 1px solid var(--linha-divisoria); padding-top: 24px; }
+        .archived-toggle-link { font-size: 0.75rem; font-weight: 600; color: var(--texto-mutado); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 6px; }
+        .archived-toggle-link:hover { color: var(--texto-principal); }
+        .archived-list { display: none; flex-direction: column; margin-top: 16px; }
+        .archived-list.open { display: flex; }
+        .archived-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(30,47,35,0.08); font-size: 0.85rem; color: var(--texto-mutado); }
+        .archived-row-info { display: flex; align-items: center; gap: 12px; }
+        .archived-badge { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; background: rgba(107, 111, 103, 0.1); padding: 2px 8px; border-radius: 10px; }
+        .btn-reactivate { background: transparent; border: 1px solid var(--linha-divisoria); padding: 4px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; cursor: pointer; color: var(--texto-principal); transition: all 0.2s; font-family: var(--fonte-ui); }
+        .btn-reactivate:hover { border-color: var(--verde-terroso); color: var(--verde-terroso); }
+
+        /* GAVETA LATERAL */
+        .drawer-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(30, 47, 35, 0.2); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .drawer-backdrop.open { opacity: 1; pointer-events: all; }
+
+        .slide-drawer { position: fixed; top: 0; right: 0; width: 50vw; height: 100vh; background-color: var(--bg-base); border-left: 1px solid var(--linha-divisoria); box-shadow: -20px 0 50px rgba(0,0,0,0.1); z-index: 1000; display: flex; flex-direction: column; justify-content: space-between; padding: 56px; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide-drawer.open { transform: translateX(0); }
+
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 48px; }
+        .drawer-header h3 { font-size: 1.15rem; font-weight: 500; color: var(--texto-principal); letter-spacing: -0.3px; }
+        .drawer-close { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--texto-mutado); transition: color 0.2s; }
+        .drawer-close:hover { color: var(--texto-principal); }
+
+        .drawer-body { display: flex; flex-direction: column; gap: 32px; flex-grow: 1; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--texto-mutado); }
+        
+        .governance-notice { background: rgba(181, 129, 42, 0.08); border-left: 2px solid var(--alerta-amarelo); padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: var(--texto-principal); line-height: 1.5; }
+        .governance-notice strong { color: var(--alerta-amarelo); font-weight: 600; }
+
+        .select-wrapper { position: relative; width: 100%; }
+        .form-select-line { background: transparent; border: none; border-bottom: 1px solid var(--linha-divisoria); border-radius: 0; padding: 10px 24px 10px 0; font-family: var(--fonte-ui); font-size: 1rem; color: var(--texto-principal); outline: none; width: 100%; cursor: pointer; appearance: none; -webkit-appearance: none; }
+        .form-select-line:focus { border-bottom-color: var(--verde-terroso); }
+        .select-wrapper::after { content: ''; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; border-right: 1.5px solid var(--texto-mutado); border-bottom: 1.5px solid var(--texto-mutado); rotate: 45deg; pointer-events: none; }
+
+        .input-monetary-line-wrapper { display: flex; align-items: baseline; gap: 4px; border-bottom: 1px solid var(--linha-divisoria); padding-bottom: 4px; transition: border-bottom-color 0.2s; }
+        .input-monetary-line-wrapper span { font-family: var(--fonte-dados); color: var(--texto-mutado); font-size: 1.1rem; font-weight: 300; }
+        .form-input-monetary { background: transparent; border: none; font-family: var(--fonte-dados); font-size: 2rem; font-weight: 400; color: var(--texto-principal); width: 100%; outline: none; letter-spacing: -1px; }
+        .input-monetary-line-wrapper:focus-within { border-bottom-color: var(--verde-terroso); }
+
+        .drawer-footer { display: flex; justify-content: flex-end; align-items: center; gap: 24px; padding-top: 24px; border-top: 1px solid var(--linha-divisoria); }
+        .btn-cancel { background: transparent; border: none; font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-mutado); cursor: pointer; }
+        .btn-cancel:hover { color: var(--texto-principal); }
+        .btn-submit { background-color: var(--verde-terroso); color: #fff; border: none; font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 10px 24px; border-radius: 14px; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 4px 12px rgba(96, 119, 68, 0.2); }
+        .btn-submit:hover { background-color: #4e6137; }
+
+        /* MENU DOCK */
+        .glass-dock { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background-color: rgba(244, 241, 234, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(30, 47, 35, 0.1); border-radius: 24px; display: flex; align-items: center; gap: 4px; padding: 6px 12px; z-index: 100; box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
+        .dock-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; height: 56px; border-radius: 16px; color: var(--texto-mutado); text-decoration: none; transition: all 0.3s; position: relative; }
+        .dock-item svg { width: 20px; height: 20px; stroke-width: 1.5; transition: all 0.2s; }
+        .dock-item span { font-size: 0.6rem; font-weight: 600; opacity: 0; transform: translateY(4px); transition: all 0.2s; position: absolute; bottom: 6px; }
+        .dock-item:hover { color: var(--texto-principal); background-color: rgba(30, 47, 35, 0.04); }
+        .dock-item:hover svg { transform: translateY(-6px); }
+        .dock-item:hover span { opacity: 1; transform: translateY(0); }
+        .dock-item.active { color: var(--verde-terroso); background-color: rgba(96, 119, 68, 0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo"><h1>Yeldify</h1></div>
+            <div class="subtle-switcher"><span class="active">Micro</span><span>Macro</span></div>
+        </header>
+
+        <div class="section-header">
+            <h2>Categorias e Limites</h2>
+            <div class="header-actions">
+                <button class="btn-text-action" id="batch-toggle-btn" onclick="toggleBatchMode()">Gerenciar Lote</button>
+                <button class="btn-primary-action" onclick="abrirGaveta('novo')">+ Novo Orçamento</button>
+            </div>
+        </div>
+
+        <!-- LISTA ATIVA -->
+        <div class="budgets-list-container">
+            
+            <!-- ORÇAMENTO 1 -->
+            <div class="budget-row active" id="row-ifood" onclick="toggleAccordion('row-ifood', event)">
+                <div class="budget-main-line">
+                    <div class="batch-checkbox-wrapper">
+                        <input type="checkbox" class="batch-checkbox" onclick="event.stopPropagation(); atualizarContagemLote();">
+                    </div>
+                    <div class="b-meta">
+                        <div class="status-dot dot-red"></div>
+                        <span class="b-name">iFood & Restaurantes</span>
+                    </div>
+                    <div class="b-progress-area">
+                        <div class="progress-track"><div class="progress-fill fill-red" style="width: 115%;"></div></div>
+                        <span style="font-family: var(--fonte-dados); font-size: 0.7rem; color: var(--alerta-vermelho); white-space: nowrap;">115%</span>
+                    </div>
+                    <div class="b-numbers-area">
+                        <span><strong>R$ 575</strong> / 500</span>
+                        <div class="row-actions">
+                            <svg class="action-icon" onclick="abrirGaveta('editar', 'iFood', event)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            <svg class="action-icon" onclick="arquivarOrcamento('iFood', event)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="budget-accordion">
+                    <div class="acc-title">Transações que ultrapassaram o teto</div>
+                    <div class="acc-list">
+                        <div class="acc-item"><div class="acc-info"><span class="acc-date">17 Set</span><span>Ifood *Hamburgueria</span></div><div class="acc-valor">- R$ 85,90</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORÇAMENTO 2 -->
+            <div class="budget-row" id="row-transporte" onclick="toggleAccordion('row-transporte', event)">
+                <div class="budget-main-line">
+                    <div class="batch-checkbox-wrapper">
+                        <input type="checkbox" class="batch-checkbox" onclick="event.stopPropagation(); atualizarContagemLote();">
+                    </div>
+                    <div class="b-meta">
+                        <div class="status-dot dot-yellow"></div>
+                        <span class="b-name">Transporte</span>
+                    </div>
+                    <div class="b-progress-area">
+                        <div class="progress-track"><div class="progress-fill fill-yellow" style="width: 85%;"></div></div>
+                        <span style="font-family: var(--fonte-dados); font-size: 0.7rem; color: var(--alerta-amarelo); white-space: nowrap;">85%</span>
+                    </div>
+                    <div class="b-numbers-area">
+                        <span><strong>R$ 340</strong> / 400</span>
+                        <div class="row-actions">
+                            <svg class="action-icon" onclick="abrirGaveta('editar', 'Transporte', event)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            <svg class="action-icon" onclick="arquivarOrcamento('Transporte', event)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="budget-accordion">
+                    <div class="acc-title">Transações recentes</div>
+                    <div class="acc-list">
+                        <div class="acc-item"><div class="acc-info"><span class="acc-date">16 Set</span><span>Uber *Trip SP</span></div><div class="acc-valor">- R$ 28,50</div></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SEÇÃO DE ARQUIVADOS -->
+        <div class="archived-section-wrapper">
+            <span class="archived-toggle-link" onclick="toggleArquivados()">
+                <svg style="width: 12px; height: 12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                Ver orçamentos arquivados (1)
+            </span>
+            <div class="archived-list" id="archived-box">
+                <div class="archived-row">
+                    <div class="archived-row-info">
+                        <span style="font-weight: 500; color: var(--texto-principal);">Viagem de Férias (Julho)</span>
+                        <span class="archived-badge">Arquivado</span>
+                    </div>
+                    <button class="btn-reactivate" onclick="alert('Orçamento reativado!')">Reativar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BARRA FLUTUANTE DE AÇÕES EM LOTE -->
+    <div class="batch-toolbar" id="batch-toolbar">
+        <span id="batch-count">0 selecionados</span>
+        <button class="btn-batch-action" onclick="arquivarLote()">Arquivar Selecionados</button>
+    </div>
+
+    <!-- GAVETA LATERAL (SLIDE-OVER) -->
+    <div class="drawer-backdrop" id="backdrop" onclick="fecharGaveta()"></div>
+
+    <div class="slide-drawer" id="drawer">
+        <div class="drawer-header">
+            <h3 id="drawer-title">Novo Orçamento</h3>
+            <button class="drawer-close" onclick="fecharGaveta()">×</button>
+        </div>
+
+        <div class="drawer-body">
+            <div class="governance-notice" id="governance-alert" style="display: none;">
+                <strong>Nota de Governança:</strong> Este orçamento já possui movimentações em Setembro. Alterar o teto agora ajusta a projeção futura, mas registra auditoria de alteração tardia.
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <div class="select-wrapper">
+                    <select class="form-select-line" id="form-categoria">
+                        <option value="" disabled selected>Selecione a categoria...</option>
+                        <option value="alimentacao">Alimentação & Supermercado</option>
+                        <option value="refeicao">Refeição & Restaurantes</option>
+                        <option value="transporte">Transporte & Mobilidade</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Valor Alvo Mensal</label>
+                <div class="input-monetary-line-wrapper">
+                    <span>R$</span>
+                    <input type="text" class="form-input-monetary" id="form-valor" placeholder="0,00" value="800,00">
+                </div>
+            </div>
+        </div>
+
+        <div class="drawer-footer">
+            <button class="btn-cancel" onclick="fecharGaveta()">Cancelar</button>
+            <button class="btn-submit" onclick="fecharGaveta()">Salvar Alterações</button>
+        </div>
+    </div>
+
+    <!-- MENU DOCK -->
+    <nav class="glass-dock">
+        <a href="#" class="dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg><span>Dashboard</span></a>
+        <a href="#" class="dock-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg><span>Orçamentos</span></a>
+        <a href="#" class="dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line></svg><span>Transações</span></a>
+        <a href="#" class="dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg><span>Relatórios</span></a>
+    </nav>
+
+    <script>
+        function toggleAccordion(rowId, event) {
+            if (event.target.closest('.row-actions') || document.body.classList.contains('batch-mode')) return;
+            const row = document.getElementById(rowId);
+            const isActive = row.classList.contains('active');
+            document.querySelectorAll('.budget-row').forEach(r => r.classList.remove('active'));
+            if (!isActive) row.classList.add('active');
+        }
+
+        function abrirGaveta(modo, nome = '', event) {
+            if(event) event.stopPropagation();
+            const drawer = document.getElementById('drawer');
+            const backdrop = document.getElementById('backdrop');
+            const title = document.getElementById('drawer-title');
+            const govAlert = document.getElementById('governance-alert');
+
+            if(modo === 'editar') {
+                title.innerText = `Editar Orçamento: ${nome}`;
+                govAlert.style.display = 'block';
+            } else {
+                title.innerText = "Novo Orçamento";
+                govAlert.style.display = 'none';
+            }
+
+            drawer.classList.add('open');
+            backdrop.classList.add('open');
+        }
+
+        function fecharGaveta() {
+            document.getElementById('drawer').classList.remove('open');
+            document.getElementById('backdrop').classList.remove('open');
+        }
+
+        function toggleArquivados() {
+            document.getElementById('archived-box').classList.toggle('open');
+        }
+
+        function arquivarOrcamento(nome, event) {
+            event.stopPropagation();
+            alert(`O orçamento "${nome}" foi arquivado.`);
+        }
+
+        function toggleBatchMode() {
+            document.body.classList.toggle('batch-mode');
+            const btn = document.getElementById('batch-toggle-btn');
+            const toolbar = document.getElementById('batch-toolbar');
+            
+            if(document.body.classList.contains('batch-mode')) {
+                btn.innerText = "Cancelar Lote";
+                btn.classList.add('active-batch');
+            } else {
+                btn.innerText = "Gerenciar Lote";
+                btn.classList.remove('active-batch');
+                toolbar.classList.remove('visible');
+                document.querySelectorAll('.batch-checkbox').forEach(cb => cb.checked = false);
+            }
+        }
+
+        function atualizarContagemLote() {
+            const checkboxes = document.querySelectorAll('.batch-checkbox:checked');
+            const toolbar = document.getElementById('batch-toolbar');
+            const countText = document.getElementById('batch-count');
+            
+            if(checkboxes.length > 0) {
+                toolbar.classList.add('visible');
+                countText.innerText = `${checkboxes.length} selecionado(s)`;
+            } else {
+                toolbar.classList.remove('visible');
+            }
+        }
+
+        function arquivarLote() {
+            alert("Os orçamentos selecionados foram arquivados em massa.");
+            toggleBatchMode();
+        }
+    </script>
+</body>
+</html>

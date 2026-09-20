@@ -1,0 +1,187 @@
+/* ============================================
+   Yeldify Animations
+   Animações suaves (fade-in) via Intersection Observer
+   ============================================ */
+
+/* --- Fade-in Base --- */
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Delay Variado (para elementos sequenciais) --- */
+
+.fade-in-delay-1 {
+  transition-delay: 0.1s;
+}
+
+.fade-in-delay-2 {
+  transition-delay: 0.2s;
+}
+
+.fade-in-delay-3 {
+  transition-delay: 0.3s;
+}
+
+.fade-in-delay-4 {
+  transition-delay: 0.4s;
+}
+
+.fade-in-delay-5 {
+  transition-delay: 0.5s;
+}
+
+/* --- Animações para Landing Page (Atos) --- */
+
+.ato-1,
+.ato-2,
+.ato-3,
+.ato-4,
+.ato-5 {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.ato-1.visible { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
+.ato-2.visible { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
+.ato-3.visible { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+.ato-4.visible { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
+.ato-5.visible { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+
+/* --- Animação de Loading (Processamento Cognitivo) --- */
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* --- Animação para Botões --- */
+
+@keyframes buttonHover {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-2px);
+  }
+}
+
+.button-hover {
+  transition: transform 0.2s ease;
+}
+
+.button-hover:hover {
+  animation: buttonHover 0.2s ease forwards;
+}
+
+/* --- Animação para Dropzone --- */
+
+@keyframes dropzoneHover {
+  0% {
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+  }
+  100% {
+    border-color: var(--color-primary);
+    background-color: var(--color-papel-polen-light);
+  }
+}
+
+.dropzone-hover {
+  transition: all 0.3s ease;
+}
+
+.dropzone-hover:hover {
+  animation: dropzoneHover 0.3s ease forwards;
+}
+
+/* --- Animação para Transações Pendentes --- */
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.pendente-shake {
+  animation: shake 0.5s ease;
+}
+
+/* --- Animação para Gráficos --- */
+
+@keyframes growIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.chart-grow-in {
+  animation: growIn 0.5s ease forwards;
+}
+
+/* --- Animação para Modal --- */
+
+@keyframes modalOpen {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-open {
+  animation: modalOpen 0.3s ease forwards;
+}
+
+@keyframes backdropFade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.backdrop-fade {
+  animation: backdropFade 0.2s ease forwards;
+}
+
+/* --- Classe para Intersection Observer --- */
+
+.intersection-observer {
+  opacity: 0;
+}
+
+.intersection-observer.visible {
+  opacity: 1;
+}

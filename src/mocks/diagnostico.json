@@ -1,0 +1,94 @@
+{
+  "desviosOportunidades": [
+    {
+      "id": 1,
+      "titulo": "Reserva de Emergência Baixa",
+      "descricao": "Seu saldo de reserva está abaixo do recomendado (3-6 meses de despesas).",
+      "tipo": "alerta",
+      "severidade": "alta",
+      "acao": "Criar orçamento para poupança de emergência"
+    },
+    {
+      "id": 2,
+      "titulo": "Gastos com Lazer Elevados",
+      "descricao": "Seus gastos com lazer representam 25% das despesas totais, acima da média recomendada (15%).",
+      "tipo": "desvio",
+      "severidade": "media",
+      "acao": "Revisar teto do orçamento de Lazer"
+    },
+    {
+      "id": 3,
+      "titulo": "Oportunidade de Investimento",
+      "descricao": "Você tem R$ 5.000 não alocados. Considere aplicar em fundos de renda fixa.",
+      "tipo": "oportunidade",
+      "severidade": "baixa",
+      "acao": "Abrir conta em corretora"
+    }
+  ],
+  "acertosVitorias": [
+    {
+      "id": 1,
+      "titulo": "Consistência em Poupança",
+      "descricao": "Você poupou 20% da sua renda nos últimos 6 meses.",
+      "tipo": "acerto",
+      "impacto": "positivo"
+    },
+    {
+      "id": 2,
+      "titulo": "Aportes Regulares",
+      "descricao": "Você fez aportes mensais em investimentos nos últimos 12 meses.",
+      "tipo": "vitoria",
+      "impacto": "positivo"
+    },
+    {
+      "id": 3,
+      "titulo": "Controle de Despesas Fixas",
+      "descricao": "Suas despesas fixas estão dentro do planejado.",
+      "tipo": "acerto",
+      "impacto": "positivo"
+    }
+  ],
+  "propostaOrcamentos": [
+    {
+      "id": 1,
+      "nome": "Alimentação",
+      "tetoSugerido": 1500,
+      "tetoAtual": 1200,
+      "editavel": true
+    },
+    {
+      "id": 2,
+      "nome": "Lazer",
+      "tetoSugerido": 600,
+      "tetoAtual": 800,
+      "editavel": true
+    },
+    {
+      "id": 3,
+      "nome": "Transporte",
+      "tetoSugerido": 500,
+      "tetoAtual": 300,
+      "editavel": true
+    },
+    {
+      "id": 4,
+      "nome": "Saúde",
+      "tetoSugerido": 400,
+      "tetoAtual": 400,
+      "editavel": true
+    },
+    {
+      "id": 5,
+      "nome": "Poupança",
+      "tetoSugerido": 1000,
+      "tetoAtual": 0,
+      "editavel": true
+    }
+  ],
+  "resumo": {
+    "totalDespesas": 3200,
+    "totalRenda": 8000,
+    "percentualPoupanca": 20,
+    "scoreFinanceiro": 75
+  }
+}

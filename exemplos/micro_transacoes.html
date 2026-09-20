@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeldify - Timeline com Entrada Manual (Dinheiro Vivo)</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #F4F1EA; 
+            --texto-principal: #1e2f23; 
+            --texto-mutado: #6B6F67;
+            --linha-divisoria: rgba(30, 47, 35, 0.12);
+            
+            --verde-terroso: #607744;
+            --dourado-suave: #9c8335;
+            --alerta-vermelho: #9B453A;
+            --alerta-amarelo: #B5812A;
+            
+            --fonte-ui: 'Sora', sans-serif;
+            --fonte-dados: 'IBM Plex Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-base); color: var(--texto-principal); font-family: var(--fonte-ui); padding: 40px; padding-bottom: 140px; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* HEADER */
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+        .logo h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.5px; }
+
+        /* TOOLBAR DE BUSCA & AÇÃO */
+        .transactions-toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--linha-divisoria);
+        }
+        
+        .search-wrapper {
+            display: flex; align-items: center; gap: 12px; width: 320px;
+            border-bottom: 1px solid var(--linha-divisoria); padding-bottom: 6px;
+            transition: border-bottom-color 0.2s;
+        }
+        .search-wrapper:focus-within { border-bottom-color: var(--verde-terroso); }
+        .search-wrapper svg { width: 14px; height: 14px; color: var(--texto-mutado); stroke-width: 1.5; }
+        .search-input {
+            background: transparent; border: none; font-family: var(--fonte-ui); font-size: 0.9rem;
+            color: var(--texto-principal); width: 100%; outline: none;
+        }
+        .search-input::placeholder { color: var(--texto-mutado); opacity: 0.7; }
+
+        .toolbar-actions { display: flex; align-items: center; gap: 20px; }
+        .toolbar-filters { display: flex; gap: 14px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-mutado); }
+        .filter-item { cursor: pointer; transition: color 0.2s; }
+        .filter-item:hover, .filter-item.active { color: var(--texto-principal); }
+
+        .btn-action-outline {
+            background: transparent; border: 1px solid rgba(30,47,35,0.2); color: var(--texto-principal);
+            font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; padding: 6px 14px; border-radius: 14px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-action-outline:hover { border-color: var(--verde-terroso); color: var(--verde-terroso); }
+
+        /* TIMELINE EDITORIAL */
+        .timeline-container { position: relative; padding-left: 24px; }
+        .timeline-container::before {
+            content: ''; position: absolute; left: 4px; top: 8px; bottom: 8px;
+            width: 1px; background-color: rgba(96, 119, 68, 0.3);
+        }
+
+        .timeline-block { margin-bottom: 36px; position: relative; }
+        .timeline-block:last-child { margin-bottom: 0; }
+
+        .timeline-marker-label {
+            font-family: var(--fonte-dados); font-size: 0.65rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.5px; color: var(--verde-terroso);
+            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+        }
+        .timeline-marker-label::before {
+            content: ''; position: absolute; left: -23.5px; width: 7px; height: 7px;
+            background-color: var(--bg-base); border: 2px solid var(--verde-terroso); border-radius: 50%;
+        }
+
+        .transaction-row {
+            display: grid; grid-template-columns: 2fr 1.2fr 1fr; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid rgba(30, 47, 35, 0.06);
+            transition: background-color 0.2s;
+        }
+        .transaction-row:hover { background-color: rgba(30, 47, 35, 0.02); }
+
+        .t-description { display: flex; flex-direction: column; gap: 4px; }
+        .t-title { font-size: 0.9rem; font-weight: 500; color: var(--texto-principal); }
+        .t-account { font-size: 0.7rem; color: var(--texto-mutado); font-family: var(--fonte-dados); }
+
+        .t-category { display: flex; align-items: center; gap: 6px; }
+        .category-tag {
+            font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 4px 10px; border-radius: 12px; background: rgba(30, 47, 35, 0.06); color: var(--texto-mutado);
+            cursor: pointer; transition: all 0.2s; display: inline-block;
+        }
+        .category-tag:hover { background: rgba(30, 47, 35, 0.12); color: var(--texto-principal); }
+        
+        .inline-category-select {
+            background: #fff; border: 1px solid var(--verde-terroso); font-family: var(--fonte-ui);
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--texto-principal);
+            padding: 4px 8px; border-radius: 8px; outline: none; cursor: pointer;
+        }
+
+        .t-amount {
+            font-family: var(--fonte-dados); font-size: 0.9rem; font-weight: 500; text-align: right;
+            color: var(--texto-principal); display: flex; align-items: baseline; justify-content: flex-end; gap: 4px;
+        }
+        .t-amount.expense { color: var(--texto-principal); }
+        .t-amount.income { color: var(--verde-terroso); }
+
+        /* =========================================
+           SLIDE-OVER (GAVETA DE CRIAÇÃO MANUAL)
+           ========================================= */
+        .drawer-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(30, 47, 35, 0.2); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .drawer-backdrop.open { opacity: 1; pointer-events: all; }
+
+        .slide-drawer { position: fixed; top: 0; right: 0; width: 50vw; height: 100vh; background-color: var(--bg-base); border-left: 1px solid var(--linha-divisoria); box-shadow: -20px 0 50px rgba(0,0,0,0.1); z-index: 1000; display: flex; flex-direction: column; justify-content: space-between; padding: 56px; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide-drawer.open { transform: translateX(0); }
+
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .drawer-header h3 { font-size: 1.15rem; font-weight: 500; color: var(--texto-principal); letter-spacing: -0.3px; }
+        .drawer-close { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--texto-mutado); transition: color 0.2s; }
+        .drawer-close:hover { color: var(--texto-principal); }
+
+        .drawer-body { display: flex; flex-direction: column; gap: 28px; flex-grow: 1; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--texto-mutado); }
+        
+        .form-input-line { background: transparent; border: none; border-bottom: 1px solid var(--linha-divisoria); padding: 10px 0; font-family: var(--fonte-ui); font-size: 1rem; color: var(--texto-principal); outline: none; width: 100%; transition: border-color 0.2s; }
+        .form-input-line:focus { border-bottom-color: var(--verde-terroso); }
+
+        .input-monetary-line-wrapper { display: flex; align-items: baseline; gap: 4px; border-bottom: 1px solid var(--linha-divisoria); padding-bottom: 4px; }
+        .input-monetary-line-wrapper span { font-family: var(--fonte-dados); color: var(--texto-mutado); font-size: 1.1rem; }
+        .form-input-monetary { background: transparent; border: none; font-family: var(--fonte-dados); font-size: 2rem; font-weight: 400; color: var(--texto-principal); width: 100%; outline: none; }
+
+        .select-wrapper { position: relative; width: 100%; }
+        .form-select-line { background: transparent; border: none; border-bottom: 1px solid var(--linha-divisoria); border-radius: 0; padding: 10px 24px 10px 0; font-family: var(--fonte-ui); font-size: 1rem; color: var(--texto-principal); outline: none; width: 100%; cursor: pointer; appearance: none; -webkit-appearance: none; }
+        .select-wrapper::after { content: ''; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; border-right: 1.5px solid var(--texto-mutado); border-bottom: 1.5px solid var(--texto-mutado); rotate: 45deg; pointer-events: none; }
+
+        .drawer-footer { display: flex; justify-content: flex-end; align-items: center; gap: 24px; padding-top: 24px; border-top: 1px solid var(--linha-divisoria); }
+        .btn-cancel { background: transparent; border: none; font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-mutado); cursor: pointer; }
+        .btn-submit { background-color: var(--verde-terroso); color: #fff; border: none; font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 10px 24px; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(96, 119, 68, 0.2); }
+
+        /* MENU DOCK */
+        .glass-dock { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background-color: rgba(244, 241, 234, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(30, 47, 35, 0.1); border-radius: 24px; display: flex; align-items: center; gap: 4px; padding: 6px 12px; z-index: 100; box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
+        .dock-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; height: 56px; border-radius: 16px; color: var(--texto-mutado); text-decoration: none; transition: all 0.3s; position: relative; }
+        .dock-item svg { width: 20px; height: 20px; stroke-width: 1.5; transition: all 0.2s; }
+        .dock-item span { font-size: 0.6rem; font-weight: 600; opacity: 0; transform: translateY(4px); transition: all 0.2s; position: absolute; bottom: 6px; }
+        .dock-item:hover { color: var(--texto-principal); background-color: rgba(30, 47, 35, 0.04); }
+        .dock-item:hover svg { transform: translateY(-6px); }
+        .dock-item:hover span { opacity: 1; transform: translateY(0); }
+        .dock-item.active { color: var(--verde-terroso); background-color: rgba(96, 119, 68, 0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo"><h1>Yeldify</h1></div>
+            <div style="font-size: 0.75rem; color: var(--texto-mutado); font-family: var(--fonte-dados);">Extrato em Timeline Editorial</div>
+        </header>
+
+        <!-- TOOLBAR DE BUSCA & BOTÃO MANUAL -->
+        <div class="transactions-toolbar">
+            <div class="search-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" class="search-input" placeholder="Buscar por descrição, estabelecimento..." oninput="filtrarTransacoes(this.value)">
+            </div>
+            <div class="toolbar-actions">
+                <div class="toolbar-filters">
+                    <span class="filter-item active">Todas</span>
+                    <span class="filter-item">Despesas</span>
+                    <span class="filter-item">Receitas</span>
+                </div>
+                <button class="btn-action-outline" onclick="abrirGavetaManual()">+ Novo Lançamento</button>
+            </div>
+        </div>
+
+        <!-- TIMELINE EDITORIAL -->
+        <div class="timeline-container">
+            
+            <div class="timeline-block">
+                <div class="timeline-marker-label">Hoje • 17 de Setembro</div>
+                
+                <div class="transaction-row">
+                    <div class="t-description"><span class="t-title">Café e Pão de Queijo (Dinheiro Vivo)</span><span class="t-account">Carteira Física • Espécie</span></div>
+                    <div class="t-category"><span class="category-tag" id="tag-1" onclick="ativarEdicaoInline(1, 'Alimentação')">Alimentação</span></div>
+                    <div class="t-amount expense"><span>- R$</span> 14,00</div>
+                </div>
+
+                <div class="transaction-row">
+                    <div class="t-description"><span class="t-title">Ifood *Hamburgueria</span><span class="t-account">Nubank • Crédito</span></div>
+                    <div class="t-category"><span class="category-tag" id="tag-2" onclick="ativarEdicaoInline(2, 'Refeição')">Refeição</span></div>
+                    <div class="t-amount expense"><span>- R$</span> 85,90</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- GAVETA LATERAL DE ENTRADA MANUAL -->
+    <div class="drawer-backdrop" id="backdrop" onclick="fecharGavetaManual()"></div>
+
+    <div class="slide-drawer" id="drawer">
+        <div class="drawer-header">
+            <h3>Novo Lançamento Manual</h3>
+            <button class="drawer-close" onclick="fecharGavetaManual()">×</button>
+        </div>
+
+        <div class="drawer-body">
+            <div class="form-group">
+                <label class="form-label">Descrição / Estabelecimento</label>
+                <input type="text" class="form-input-line" placeholder="Ex: Estacionamento, Café, Acerto...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Valor</label>
+                <div class="input-monetary-line-wrapper">
+                    <span>R$</span>
+                    <input type="text" class="form-input-monetary" placeholder="0,00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Categoria / Orçamento</label>
+                <div class="select-wrapper">
+                    <select class="form-select-line">
+                        <option value="alimentacao">Alimentação & Supermercado</option>
+                        <option value="refeicao">Refeição & Restaurantes</option>
+                        <option value="transporte">Transporte & Mobilidade</option>
+                        <option value="lazer">Lazer & Entretenimento</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Conta / Origem (ou Dinheiro Vivo)</label>
+                <div class="select-wrapper">
+                    <select class="form-select-line">
+                        <option value="especie">Carteira Física • Dinheiro Vivo (Espécie)</option>
+                        <option value="nubank">Nubank • Cartão de Crédito</option>
+                        <option value="itau">Itaú • Conta Corrente</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="drawer-footer">
+            <button class="btn-cancel" onclick="fecharGavetaManual()">Cancelar</button>
+            <button class="btn-submit" onclick="fecharGavetaManual()">Adicionar Lançamento</button>
+        </div>
+    </div>
+
+    <!-- MENU DOCK -->
+    <nav class="glass-dock">
+        <a href="#" class="dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg><span>Dashboard</span></a>
+        <a href="#" class="dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg><span>Orçamentos</span></a>
+        <a href="#" class="dock-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line></svg><span>Transações</span></a>
+        <a href="#" class="dock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg><span>Relatórios</span></a>
+    </nav>
+
+    <script>
+        function abrirGavetaManual() {
+            document.getElementById('drawer').classList.add('open');
+            document.getElementById('backdrop').classList.add('open');
+        }
+
+        function fecharGavetaManual() {
+            document.getElementById('drawer').classList.remove('open');
+            document.getElementById('backdrop').classList.remove('open');
+        }
+
+        function ativarEdicaoInline(id, categoriaAtual) {
+            const tagEl = document.getElementById(`tag-${id}`);
+            tagEl.outerHTML = `
+                <select class="inline-category-select" id="tag-${id}" onblur="salvarCategoriaInline(${id})" onchange="salvarCategoriaInline(${id})">
+                    <option value="alimentacao" ${categoriaAtual==='Alimentação'?'selected':''}>Alimentação</option>
+                    <option value="refeicao" ${categoriaAtual==='Refeição'?'selected':''}>Refeição</option>
+                    <option value="transporte" ${categoriaAtual==='Transporte'?'selected':''}>Transporte</option>
+                </select>
+            `;
+            document.getElementById(`tag-${id}`).focus();
+        }
+
+        function salvarCategoriaInline(id) {
+            const selectEl = document.getElementById(`tag-${id}`);
+            const novaCat = selectEl.options[selectEl.selectedIndex].text;
+            selectEl.outerHTML = `<span class="category-tag" id="tag-${id}" onclick="ativarEdicaoInline(${id}, '${novaCat}')">${novaCat}</span>`;
+        }
+
+        function filtrarTransacoes(termo) {
+            const busca = termo.toLowerCase();
+            document.querySelectorAll('.transaction-row').forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(busca) ? 'grid' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

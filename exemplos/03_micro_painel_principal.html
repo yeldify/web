@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeldify - Correção de Fade e Empty State</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #F4F1EA; 
+            --texto-principal: #1e2f23; 
+            --texto-mutado: #6B6F67;
+            --linha-divisoria: rgba(30, 47, 35, 0.12);
+            
+            --verde-terroso: #607744;
+            --dourado-suave: #9c8335;
+            --alerta-vermelho: #9B453A; 
+            --alerta-amarelo: #B5812A;  
+            
+            --fonte-ui: 'Sora', sans-serif;
+            --fonte-dados: 'IBM Plex Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-base); color: var(--texto-principal); font-family: var(--fonte-ui); padding: 40px; padding-bottom: 120px; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 1200px; margin: 0 auto; position: relative; }
+
+        /* HEADER */
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 56px; }
+        .header-left { display: flex; flex-direction: column; gap: 8px; }
+        .logo-wrapper { display: flex; align-items: baseline; gap: 16px; }
+        .logo h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.5px; }
+        .month-selector { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; font-weight: 500; color: var(--texto-mutado); }
+        .month-selector svg { width: 14px; height: 14px; cursor: pointer; transition: color 0.2s; }
+        .month-selector svg:hover { color: var(--texto-principal); }
+        
+        .subtle-switcher { display: flex; gap: 20px; font-size: 0.75rem; font-weight: 600; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 1px; align-items: center;}
+        .subtle-switcher span { cursor: pointer; padding-bottom: 4px; position: relative; }
+        .subtle-switcher span.active { color: var(--texto-principal); }
+        .subtle-switcher span.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-color: var(--verde-terroso); border-radius: 2px; }
+
+        /* Botão de Teste Exclusivo para o Dev/UX */
+        .dev-toggle { background: transparent; border: 1px solid var(--linha-divisoria); padding: 4px 12px; border-radius: 12px; font-size: 0.7rem; cursor: pointer; color: var(--texto-mutado); transition: all 0.2s;}
+        .dev-toggle:hover { border-color: var(--texto-principal); color: var(--texto-principal);}
+
+        /* DATA RIBBON */
+        .data-ribbon { display: flex; align-items: flex-start; border-top: 1px solid var(--linha-divisoria); border-bottom: 1px solid var(--linha-divisoria); padding: 32px 0; margin-bottom: 56px; }
+        .data-block { flex: 1; padding: 12px 32px; position: relative; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; }
+        .data-block:first-child { padding-left: 12px; }
+        .data-block:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 15%; height: 70%; width: 1px; background-color: var(--linha-divisoria); transition: opacity 0.3s; }
+        .data-block:hover { background-color: rgba(30, 47, 35, 0.03); transform: translateY(-2px); }
+        .data-block:hover::after { opacity: 0; }
+        .data-label { font-size: 0.65rem; font-weight: 600; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .dot-green { background-color: var(--verde-terroso); }
+        .dot-red { background-color: var(--alerta-vermelho); }
+        .dot-yellow { background-color: var(--alerta-amarelo); }
+        .data-value { font-family: var(--fonte-dados); font-size: 2.2rem; font-weight: 400; letter-spacing: -1px; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+        .data-currency { font-size: 0.9rem; font-weight: 300; color: var(--texto-mutado); letter-spacing: 0; }
+        .color-gold { color: var(--dourado-suave); }
+        .color-red { color: var(--alerta-vermelho); }
+        .color-yellow { color: var(--alerta-amarelo); }
+        .data-subtext { margin-top: 12px; font-size: 0.75rem; color: var(--texto-mutado); font-weight: 400; }
+
+        /* LAYOUT & FADE-OUT CORRIGIDO */
+        .split-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; }
+        .split-layout > div { min-width: 0; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--linha-divisoria); }
+        .section-header h2 { font-size: 1.05rem; font-weight: 500; color: var(--texto-principal); letter-spacing: 0.5px;}
+        
+        /* O Segredo do Fade: altura controlada e overflow */
+        .fade-list-container { 
+            position: relative; 
+            max-height: 380px; /* Força o limite para o fade aparecer */
+            overflow: hidden;
+            -webkit-mask-image: linear-gradient(to bottom, black 65%, transparent 100%); 
+            mask-image: linear-gradient(to bottom, black 65%, transparent 100%); 
+        }
+        
+        .btn-view-all { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); background: var(--bg-base); border: 1px solid rgba(30,47,35,0.15); color: var(--texto-principal); font-family: var(--fonte-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 8px 24px; border-radius: 20px; cursor: pointer; transition: all 0.2s; z-index: 10; }
+        .btn-view-all:hover { border-color: var(--verde-terroso); color: var(--verde-terroso); }
+
+        /* ESTILO DAS LISTAS */
+        .transaction-list { display: flex; flex-direction: column; }
+        .t-item { display: flex; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--linha-divisoria); }
+        .t-data { font-family: var(--fonte-dados); font-size: 0.75rem; color: var(--texto-mutado); width: 60px; }
+        .t-info { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .t-nome-wrapper { display: flex; align-items: center; gap: 12px; }
+        .t-nome { font-size: 0.9rem; font-weight: 500; }
+        .t-conta { font-size: 0.65rem; color: var(--texto-mutado); font-weight: 400; letter-spacing: 0.5px;}
+        .t-tag { background-color: transparent; border: 1px solid rgba(30,47,35,0.15); color: var(--texto-mutado); padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; letter-spacing: 0.5px; }
+        .t-tag.tag-alerta { border-color: rgba(155, 69, 58, 0.3); color: var(--alerta-vermelho); }
+        .t-valor { font-family: var(--fonte-dados); font-weight: 500; font-size: 0.95rem; }
+        .v-positivo { color: var(--verde-terroso); }
+
+        .budget-list { display: flex; flex-direction: column; gap: 24px; padding-bottom: 20px;}
+        .b-item { display: flex; flex-direction: column; gap: 8px; }
+        .b-header { display: flex; justify-content: space-between; align-items: flex-end; }
+        .b-nome { font-size: 0.85rem; color: var(--texto-principal); font-weight: 500; }
+        .b-valores { font-family: var(--fonte-dados); font-size: 0.75rem; color: var(--texto-mutado); }
+        .progress-track { background-color: var(--linha-divisoria); height: 4px; border-radius: 2px; width: 100%; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 2px; }
+        .fill-green { background-color: var(--verde-terroso); }
+        .fill-yellow { background-color: var(--alerta-amarelo); }
+
+        /* =========================================
+           O EMPTY STATE REAL (Zero Dados)
+           ========================================= */
+        .empty-state {
+            display: none; /* Oculto por padrão */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 64px 20px;
+            color: var(--texto-mutado);
+        }
+        
+        .empty-state svg { width: 48px; height: 48px; stroke-width: 1; margin-bottom: 16px; opacity: 0.5; }
+        .empty-state h3 { font-size: 1rem; color: var(--texto-principal); font-weight: 500; margin-bottom: 8px; }
+        .empty-state p { font-size: 0.85rem; max-width: 280px; line-height: 1.5; }
+        
+        /* Classes de controle via JS */
+        .show-empty .fade-list-container, .show-empty .btn-view-all { display: none !important; }
+        .show-empty .empty-state { display: flex !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <div class="logo-wrapper">
+                    <div class="logo"><h1>Yeldify</h1></div>
+                    <div class="month-selector">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        Setembro 2026
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="subtle-switcher">
+                <button class="dev-toggle" onclick="toggleDados()">Testar Empty State</button>
+                <span class="active">Micro</span>
+                <span>Macro</span>
+            </div>
+        </header>
+
+        <!-- DATA RIBBON (Com alertas dinâmicos preenchidos) -->
+        <div class="data-ribbon">
+            <div class="data-block">
+                <div class="data-label">Saldo Disponível</div>
+                <div class="data-value color-gold"><span class="data-currency">R$</span>14.530<span style="font-size: 1.2rem;">,00</span></div>
+                <div class="data-subtext">Caixa real consolidado</div>
+            </div>
+            <div class="data-block">
+                <div class="data-label"><div class="status-dot dot-red"></div>Estourou: iFood</div>
+                <div class="data-value color-red">115<span class="data-currency">%</span></div>
+                <div class="data-subtext">Você passou R$ 75,00 do limite.</div>
+            </div>
+            <div class="data-block">
+                <div class="data-label"><div class="status-dot dot-yellow"></div>Atenção: Uber</div>
+                <div class="data-value color-yellow">85<span class="data-currency">%</span></div>
+                <div class="data-subtext">Restam R$ 60,00 (12 dias).</div>
+            </div>
+        </div>
+
+        <div class="split-layout">
+            
+            <!-- ESQUERDA: TRANSAÇÕES -->
+            <div id="transacoes-container">
+                <div class="section-header">
+                    <h2>Últimas Movimentações</h2>
+                </div>
+
+                <div style="position: relative;">
+                    <!-- O EMPTY STATE VISUAL (SÓ APARECE SE ATIVADO) -->
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <h3>Nenhuma movimentação</h3>
+                        <p>Arraste uma fatura ou arquivo OFX para qualquer lugar da tela para começar.</p>
+                    </div>
+
+                    <!-- A LISTA COM FADE (AGORA COM ITENS SUFICIENTES) -->
+                    <div class="fade-list-container">
+                        <div class="transaction-list">
+                            <div class="t-item"><div class="t-data">17 Set</div><div class="t-info"><div class="t-nome-wrapper"><span class="t-nome">Ifood *Hamburgueria</span><span class="t-tag tag-alerta">Restaurante</span></div><span class="t-conta">Cartão Nubank • Crédito</span></div><div class="t-valor">- 85,90</div></div>
+                            <div class="t-item"><div class="t-data">16 Set</div><div class="t-info"><div class="t-nome-wrapper"><span class="t-nome">Uber *Trip SP</span><span class="t-tag">Transporte</span></div><span class="t-conta">Cartão Nubank • Crédito</span></div><div class="t-valor">- 28,50</div></div>
+                            <div class="t-item"><div class="t-data">15 Set</div><div class="t-info"><div class="t-nome-wrapper"><span class="t-nome">Mercado Extra</span><span class="t-tag">Supermercado</span></div><span class="t-conta">Itaú • Conta Corrente</span></div><div class="t-valor">- 340,00</div></div>
+                            <div class="t-item"><div class="t-data">12 Set</div><div class="t-info"><div class="t-nome-wrapper"><span class="t-nome">Pix: Cliente X</span><span class="t-tag">Receita</span></div><span class="t-conta">Itaú • Conta Corrente</span></div><div class="t-valor v-positivo">+ 1.200,00</div></div>
+                            <!-- Estes são os itens que sofrerão o fade -->
+                            <div class="t-item"><div class="t-data">10 Set</div><div class="t-info"><div class="t-nome-wrapper"><span class="t-nome">Netflix.com</span></div><span class="t-conta">Cartão XP • Crédito</span></div><div class="t-valor">- 55,90</div></div>
+                            <div class="t-item"><div class="t-data">08 Set</div><div class="t-info"><div class="t-nome-wrapper"><span class="t-nome">Farmácia SP</span></div><span class="t-conta">Itaú • Conta Corrente</span></div><div class="t-valor">- 112,00</div></div>
+                            <div class="t-item"><div class="t-data">05 Set</div><div class="t-info"><div class="t-nome-wrapper"><span class="t-nome">Posto Shell</span></div><span class="t-conta">Cartão Nubank • Crédito</span></div><div class="t-valor">- 210,00</div></div>
+                        </div>
+                    </div>
+                    <button class="btn-view-all">Ver todas (52)</button>
+                </div>
+            </div>
+
+            <!-- DIREITA: ORÇAMENTOS -->
+            <div id="orcamentos-container">
+                <div class="section-header"><h2>Meus Orçamentos</h2></div>
+                <div style="position: relative;">
+                    
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        <h3>Sem orçamentos ativos</h3>
+                        <p>Configure limites de gastos para ver o acompanhamento do mês aqui.</p>
+                    </div>
+
+                    <div class="fade-list-container" style="max-height: 250px;">
+                        <div class="budget-list">
+                            <div class="b-item"><div class="b-header"><span class="b-nome">Supermercado</span><span class="b-valores">340 / 800</span></div><div class="progress-track"><div class="progress-fill fill-green" style="width: 42%"></div></div></div>
+                            <div class="b-item"><div class="b-header"><span class="b-nome">Transporte</span><span class="b-valores">340 / 400</span></div><div class="progress-track"><div class="progress-fill fill-yellow" style="width: 85%"></div></div></div>
+                            <div class="b-item"><div class="b-header"><span class="b-nome">Lazer & Festas</span><span class="b-valores">200 / 600</span></div><div class="progress-track"><div class="progress-fill fill-green" style="width: 33%"></div></div></div>
+                            <div class="b-item"><div class="b-header"><span class="b-nome">Assinaturas</span><span class="b-valores">150 / 200</span></div><div class="progress-track"><div class="progress-fill fill-green" style="width: 75%"></div></div></div>
+                            <div class="b-item"><div class="b-header"><span class="b-nome">Saúde</span><span class="b-valores">112 / 300</span></div><div class="progress-track"><div class="progress-fill fill-green" style="width: 37%"></div></div></div>
+                        </div>
+                    </div>
+                    <button class="btn-view-all">Ver todos (12)</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JS PARA ALTERNAR O ESTADO VAZIO -->
+    <script>
+        let isEmpty = false;
+        function toggleDados() {
+            isEmpty = !isEmpty;
+            const containerT = document.getElementById('transacoes-container');
+            const containerO = document.getElementById('orcamentos-container');
+            
+            if (isEmpty) {
+                containerT.classList.add('show-empty');
+                containerO.classList.add('show-empty');
+                document.querySelector('.dev-toggle').innerText = "Voltar com Dados";
+            } else {
+                containerT.classList.remove('show-empty');
+                containerO.classList.remove('show-empty');
+                document.querySelector('.dev-toggle').innerText = "Testar Empty State";
+            }
+        }
+    </script>
+</body>
+</html>

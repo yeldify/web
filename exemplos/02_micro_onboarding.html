@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeldify - Diagnóstico Executivo & Proposta</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #F4F1EA; 
+            --texto-principal: #1e2f23; 
+            --texto-mutado: #6B6F67;
+            --linha-divisoria: rgba(30, 47, 35, 0.12);
+            
+            --verde-terroso: #607744;
+            --dourado-suave: #9c8335;
+            --alerta-vermelho: #9B453A;
+            
+            --fonte-ui: 'Sora', sans-serif;
+            --fonte-dados: 'IBM Plex Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-base); color: var(--texto-principal); font-family: var(--fonte-ui); min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 60px; -webkit-font-smoothing: antialiased; }
+
+        /* Controles de Demonstração */
+        .demo-controls { position: fixed; top: 24px; right: 24px; display: flex; gap: 8px; z-index: 1000; background: var(--bg-base); padding: 4px; border: 1px solid var(--linha-divisoria); border-radius: 14px; }
+        .btn-demo { background: transparent; border: none; padding: 6px 12px; border-radius: 10px; font-size: 0.65rem; cursor: pointer; color: var(--texto-mutado); font-family: var(--fonte-ui); transition: all 0.2s; }
+        .btn-demo:hover { color: var(--texto-principal); background: rgba(30,47,35,0.04); }
+
+        /* HEADER */
+        header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 40px; }
+        .logo-text { font-size: 1.1rem; font-weight: 600; letter-spacing: -0.5px; }
+
+        /* CONTAINER CENTRAL DE SLIDES (Com Esmaecimento / Fade) */
+        .diagnosis-container { width: 100%; max-width: 760px; margin: 0 auto; flex-grow: 1; display: flex; align-items: center; position: relative; }
+
+        .diag-slide { display: none; flex-direction: column; width: 100%; opacity: 0; transform: translateY(8px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .diag-slide.active { display: flex; opacity: 1; transform: translateY(0); }
+
+        .diag-tag { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--dourado-suave); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .diag-title { font-size: 2.2rem; font-weight: 400; letter-spacing: -1px; line-height: 1.25; margin-bottom: 16px; color: var(--texto-principal); }
+        .diag-description { font-size: 0.95rem; color: var(--texto-mutado); line-height: 1.6; max-width: 600px; margin-bottom: 32px; }
+
+        /* Números batidos em destaque (Sem gráficos pesados) */
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; border-top: 1px solid var(--linha-divisoria); border-bottom: 1px solid var(--linha-divisoria); padding: 24px 0; margin-bottom: 32px; }
+        .metric-item { display: flex; flex-direction: column; gap: 6px; }
+        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-mutado); font-weight: 600; }
+        .metric-value { font-family: var(--fonte-dados); font-size: 1.8rem; font-weight: 400; letter-spacing: -1px; }
+
+        /* Lista de Proposta de Orçamentos (Slide Final) */
+        .proposal-list { display: flex; flex-direction: column; width: 100%; margin-bottom: 32px; border-top: 1px solid var(--linha-divisoria); }
+        .proposal-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--linha-divisoria); font-size: 0.9rem; }
+        .proposal-info { display: flex; align-items: center; gap: 12px; }
+        .proposal-checkbox { appearance: none; width: 14px; height: 14px; border: 1px solid var(--texto-mutado); border-radius: 3px; background: transparent; cursor: pointer; transition: all 0.2s; }
+        .proposal-checkbox:checked { background: var(--verde-terroso); border-color: var(--verde-terroso); }
+        .proposal-val { font-family: var(--fonte-dados); font-weight: 500; font-size: 0.9rem; }
+
+        /* Botões de navegação suave */
+        .diag-footer { display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid var(--linha-divisoria); padding-top: 24px; }
+        
+        .btn-text-link {
+            background: transparent; border: none; color: var(--verde-terroso);
+            font-family: var(--fonte-ui); font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s;
+        }
+        .btn-text-link:hover { opacity: 0.75; }
+        .btn-text-link::after { content: '→'; }
+
+        .btn-primary-action {
+            background-color: var(--verde-terroso); color: #fff; border: none;
+            font-family: var(--fonte-ui); font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px; padding: 12px 28px;
+            border-radius: 16px; cursor: pointer; transition: background 0.2s;
+            box-shadow: 0 4px 12px rgba(96, 119, 68, 0.2);
+        }
+        .btn-primary-action:hover { background-color: #4e6137; }
+    </style>
+</head>
+<body>
+
+    <!-- Controles para testar direto -->
+    <div class="demo-controls">
+        <button class="btn-demo" onclick="irSlide(1)" style="font-weight:600; color:var(--verde-terroso);">Testar Tela de Diagnóstico</button>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo-text">Yeldify</div>
+        <div style="font-size: 0.75rem; color: var(--texto-mutado); font-family: var(--fonte-dados);">Relatório de Diagnóstico</div>
+    </header>
+
+    <!-- CONTAINER DOS SLIDES COM FADE -->
+    <main class="diagnosis-container">
+        
+        <!-- SLIDE 1: OS DESVIOS E ALERTAS -->
+        <div class="diag-slide active" id="slide-1">
+            <span class="diag-tag">01 / Pontos de Atenção</span>
+            <h1 class="diag-title">Identificamos desvios e oportunidades de ajuste estrutural.</h1>
+            <p class="diag-description">Sua categoria de Alimentação ficou 28% acima do ideal histórico. Além disso, houve um gasto pontual com manutenção residencial — um excelente gatilho pra consolidar sua Reserva de Emergência.</p>
+            
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <span class="metric-label">Desvio em Alimentação</span>
+                    <span class="metric-value" style="color: var(--alerta-vermelho);">+ R$ 340,00</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Impacto Residencial (Pontual)</span>
+                    <span class="metric-value">R$ 1.200,00</span>
+                </div>
+            </div>
+
+            <div class="diag-footer">
+                <span style="font-size: 0.75rem; color: var(--texto-mutado); font-family: var(--fonte-dados);">Passo 1 de 3</span>
+                <button class="btn-text-link" onclick="irSlide(2)">Ver os acertos e vitórias</button>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: OS ACERTOS E VITÓRIAS -->
+        <div class="diag-slide" id="slide-2">
+            <span class="diag-tag">02 / Reconhecimento de Consistência</span>
+            <h1 class="diag-title">Em contrapartida, sua base de consistência apresentou fôlego.</h1>
+            <p class="diag-description">Você manteve rigor nas transferências recorrentes, reduziu gastos com transporte em relação ao trimestre passado e destinou recursos para projetos sociais.</p>
+            
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <span class="metric-label">Economia em Transporte</span>
+                    <span class="metric-value" style="color: var(--verde-terroso);">- 18%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Aporte Social & Consistência</span>
+                    <span class="metric-value">R$ 450,00</span>
+                </div>
+            </div>
+
+            <div class="diag-footer">
+                <button class="btn-text-link" onclick="irSlide(1)" style="rotate: 180deg;">← Voltar</button>
+                <button class="btn-text-link" onclick="irSlide(3)">Ver proposta de orçamentos</button>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: A PROPOSTA (O Poder é do Usuário) -->
+        <div class="diag-slide" id="slide-3">
+            <span class="diag-tag">03 / Proposta do Sistema</span>
+            <h1 class="diag-title">O Yeldify estruturou estes tetos. O poder de aceite é seu.</h1>
+            <p class="diag-description">Com base no seu histórico de 3 meses, sugerimos travar estes limites para garantir estabilidade. Você pode desmarcar ou ajustar qualquer item antes de iniciar.</p>
+            
+            <div class="proposal-list">
+                <div class="proposal-row">
+                    <div class="proposal-info">
+                        <input type="checkbox" class="proposal-checkbox" checked>
+                        <span>Supermercado & Insumos</span>
+                    </div>
+                    <span class="proposal-val">R$ 800,00</span>
+                </div>
+                <div class="proposal-row">
+                    <div class="proposal-info">
+                        <input type="checkbox" class="proposal-checkbox" checked>
+                        <span>Refeição & Restaurantes (iFood)</span>
+                    </div>
+                    <span class="proposal-val">R$ 500,00</span>
+                </div>
+                <div class="proposal-row">
+                    <div class="proposal-info">
+                        <input type="checkbox" class="proposal-checkbox" checked>
+                        <span>Mobilidade & Transporte</span>
+                    </div>
+                    <span class="proposal-val">R$ 400,00</span>
+                </div>
+            </div>
+
+            <div class="diag-footer">
+                <button class="btn-text-link" onclick="irSlide(2)" style="rotate: 180deg;">← Voltar</button>
+                <button class="btn-primary-action" onclick="alert('Proposta aceita! Entrando no Dashboard principal com os orçamentos criados.')">Aplicar Proposta e Iniciar</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function irSlide(numero) {
+            document.querySelectorAll('.diag-slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${numero}`).classList.add('active');
+        }
+    </script>
+</body>
+</html>

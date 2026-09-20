@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "nome": "Alimentação",
+    "teto": 1500,
+    "gasto": 1200,
+    "status": "ok",
+    "categoria": "Despesas Essenciais",
+    "transacoesExcedentes": [],
+    "arquivado": false,
+    "notaGovernanca": null
+  },
+  {
+    "id": 2,
+    "nome": "Lazer",
+    "teto": 800,
+    "gasto": 950,
+    "status": "estourado",
+    "categoria": "Despesas Variáveis",
+    "transacoesExcedentes": [101, 102],
+    "arquivado": false,
+    "notaGovernanca": null
+  },
+  {
+    "id": 3,
+    "nome": "Transporte",
+    "teto": 500,
+    "gasto": 300,
+    "status": "ok",
+    "categoria": "Despesas Essenciais",
+    "transacoesExcedentes": [],
+    "arquivado": false,
+    "notaGovernanca": null
+  },
+  {
+    "id": 4,
+    "nome": "Saúde",
+    "teto": 400,
+    "gasto": 400,
+    "status": "limite",
+    "categoria": "Despesas Essenciais",
+    "transacoesExcedentes": [],
+    "arquivado": false,
+    "notaGovernanca": null
+  },
+  {
+    "id": 5,
+    "nome": "Educação",
+    "teto": 300,
+    "gasto": 0,
+    "status": "ok",
+    "categoria": "Investimentos",
+    "transacoesExcedentes": [],
+    "arquivado": true,
+    "notaGovernanca": "Arquivado por desuso temporário"
+  }
+]

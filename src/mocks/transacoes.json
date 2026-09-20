@@ -1,0 +1,101 @@
+[
+  {
+    "id": 101,
+    "descricao": "Cinema",
+    "valor": 200,
+    "categoria": "Lazer",
+    "data": "2024-09-15",
+    "pendente": false,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "cartao",
+    "conta": "Banco Principal"
+  },
+  {
+    "id": 102,
+    "descricao": "Restaurante",
+    "valor": 150,
+    "categoria": null,
+    "data": "2024-09-16",
+    "pendente": true,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "especie",
+    "conta": "Carteira Física • Espécie"
+  },
+  {
+    "id": 103,
+    "descricao": "Supermercado",
+    "valor": 450,
+    "categoria": "Alimentação",
+    "data": "2024-09-17",
+    "pendente": false,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "cartao",
+    "conta": "Banco Principal"
+  },
+  {
+    "id": 104,
+    "descricao": "Combustível",
+    "valor": 200,
+    "categoria": "Transporte",
+    "data": "2024-09-14",
+    "pendente": false,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "cartao",
+    "conta": "Banco Principal"
+  },
+  {
+    "id": 105,
+    "descricao": "Farmácia",
+    "valor": 150,
+    "categoria": "Saúde",
+    "data": "2024-09-13",
+    "pendente": false,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "cartao",
+    "conta": "Banco Principal"
+  },
+  {
+    "id": 106,
+    "descricao": "Uber",
+    "valor": 80,
+    "categoria": "Transporte",
+    "data": "2024-09-10",
+    "pendente": false,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "cartao",
+    "conta": "Banco Principal"
+  },
+  {
+    "id": 109,
+    "descricao": "Pix: Cliente X",
+    "valor": 1200,
+    "categoria": "Receita",
+    "data": "2024-09-12",
+    "pendente": false,
+    "tipo": "ENTRADA",
+    "metodo_pagamento": "pix",
+    "conta": "Itaú • Conta Corrente"
+  },
+  {
+    "id": 107,
+    "descricao": "Livro",
+    "valor": 80,
+    "categoria": null,
+    "data": "2024-09-05",
+    "pendente": true,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "especie",
+    "conta": "Carteira Física • Espécie"
+  },
+  {
+    "id": 108,
+    "descricao": "Academia",
+    "valor": 120,
+    "categoria": "Saúde",
+    "data": "2024-09-01",
+    "pendente": false,
+    "tipo": "SAIDA",
+    "metodo_pagamento": "cartao",
+    "conta": "Banco Principal"
+  }
+]

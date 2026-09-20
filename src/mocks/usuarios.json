@@ -1,0 +1,19 @@
+{
+  "123.456.789-00": {
+    "tipo": "novo",
+    "nome": "João Silva",
+    "email": "joao@exemplo.com"
+  },
+  "987.654.321-00": {
+    "tipo": "existente",
+    "nome": "Maria Santos",
+    "email": "maria@exemplo.com",
+    "senha": "123456"
+  },
+  "111.111.111-11": {
+    "tipo": "existente",
+    "nome": "Carlos Oliveira",
+    "email": "carlos@exemplo.com",
+    "senha": "abc123"
+  }
+}
