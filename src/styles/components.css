@@ -966,6 +966,27 @@
   font-family: var(--fonte-dados);
 }
 
+.t-budget {
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(30, 47, 35, 0.25);
+  transition: all 0.2s;
+}
+
+.t-budget:hover {
+  color: var(--texto-principal);
+  border-bottom-color: var(--verde-terroso);
+}
+
+.t-budget-disabled {
+  cursor: default;
+  border-bottom: none;
+}
+
+.t-budget-disabled:hover {
+  color: var(--texto-mutado);
+  border-bottom-color: transparent;
+}
+
 .t-category {
   display: flex;
   align-items: center;

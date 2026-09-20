@@ -31,6 +31,7 @@ export default function Transacoes() {
   const [activeFilter, setActiveFilter] = useState<'todas' | 'despesas' | 'receitas'>('todas');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{ id: string; currentValue: string } | null>(null);
+  const [movingBudget, setMovingBudget] = useState<{ id: string; currentValue: string } | null>(null);
   const [editFeedback, setEditFeedback] = useState<string | null>(null);
 
   // Formulário do novo lançamento
@@ -126,6 +127,26 @@ export default function Transacoes() {
       await editarTransacao(id, { categoria: newCat });
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Falha ao salvar categoria';
+      setEditFeedback(msg);
+    }
+  };
+
+  const nomeOrcamentoTransacao = (budgetId: string) => {
+    const orcamento = (data?.orcamentos ?? []).find((o) => o.id === budgetId);
+    return orcamento?.nome ?? 'Sem orçamento';
+  };
+
+  const activateMove = (id: string, currentBudgetId: string) => setMovingBudget({ id, currentValue: currentBudgetId });
+
+  const saveBudgetMove = async (id: string, novoBudgetId: string) => {
+    const atual = movingBudget;
+    setMovingBudget(null);
+    if (!atual || atual.id !== id || novoBudgetId === atual.currentValue) return;
+    setEditFeedback(null);
+    try {
+      await editarTransacao(id, { budget_id: novoBudgetId });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Falha ao mover transação';
       setEditFeedback(msg);
     }
   };
@@ -239,6 +260,26 @@ export default function Transacoes() {
                         <div className="t-description">
                           <span className="t-title">{tx.descricao}</span>
                           <span className="t-account">{tx.conta}</span>
+                          {movingBudget?.id === tx.id ? (
+                            <select className="inline-category-select" autoFocus value={tx.budget_id} onChange={(e) => saveBudgetMove(tx.id, e.target.value)} onBlur={(e) => saveBudgetMove(tx.id, e.target.value)}>
+                              <option value="" disabled>Mover para…</option>
+                              {orcamentosAtivos.map((o) => (
+                                <option key={o.id} value={o.id}>{o.nome}</option>
+                              ))}
+                              {tx.budget_id && !orcamentosAtivos.some((o) => o.id === tx.budget_id) && (
+                                <option value={tx.budget_id}>Orçamento arquivado</option>
+                              )}
+                            </select>
+                          ) : (
+                            <span className="t-account" style={{ marginTop: 2 }}>
+                              <span
+                                className={orcamentosAtivos.length > 0 ? 't-budget' : 't-budget t-budget-disabled'}
+                                onClick={() => { if (orcamentosAtivos.length > 0) activateMove(tx.id, tx.budget_id); }}
+                              >
+                                Em: {nomeOrcamentoTransacao(tx.budget_id)}
+                              </span>
+                            </span>
+                          )}
                         </div>
                         <div className="t-category">
                           {editingCategory?.id === tx.id ? (
