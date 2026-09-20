@@ -32,6 +32,7 @@ export interface Orcamento {
   gasto: number;
   data_criacao: string;
   ativo: boolean;
+  nota_governanca: string | null;
 }
 
 export interface OrcamentoList {
@@ -108,6 +109,7 @@ export interface EditarOrcamentoPayload {
   valor?: number;
   validade_meses?: number;
   ativo?: boolean;
+  nota_governanca?: string;
 }
 
 export interface Token {

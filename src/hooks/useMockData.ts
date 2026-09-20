@@ -108,7 +108,7 @@ function mapApiOrcamento(o: import('../api/types').Orcamento): Orcamento {
     categoria: o.categoria,
     transacoesExcedentes: [],
     arquivado: !o.ativo,
-    notaGovernanca: null,
+    notaGovernanca: o.nota_governanca ?? null,
   };
 }
 

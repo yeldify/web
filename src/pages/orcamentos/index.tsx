@@ -158,7 +158,11 @@ export default function Orcamentos() {
         const cat = CATEGORIAS.find((c) => c.value === category) ?? CATEGORIAS[CATEGORIAS.length - 1];
         await api.criarOrcamento({ nome: cat.label, categoria: cat.value, valor, validade_meses: 1 });
       } else if (drawerBudget) {
-        await api.editarOrcamento(drawerBudget.id, { valor });
+        const notas = governanceNote.trim();
+        await api.editarOrcamento(drawerBudget.id, {
+          valor,
+          ...(notas ? { nota_governanca: notas } : {}),
+        });
       }
       refresh();
       closeDrawer();
@@ -320,7 +324,14 @@ export default function Orcamentos() {
         </div>
         <div className="drawer-body">
           {drawerMode === 'editar' && hasExistingTransactions && (
-            <div className="governance-notice"><strong>Nota de Governança:</strong> Este orçamento já possui movimentações em Setembro. Alterar o teto agora ajusta a projeção futura, mas registra auditoria de alteração tardia.</div>
+            <div className="governance-notice">
+              <strong>Nota de Governança:</strong> Este orçamento já possui movimentações em Setembro. Alterar o teto agora ajusta a projeção futura, mas registra auditoria de alteração tardia.
+              {drawerBudget?.notaGovernanca && (
+                <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--texto-mutado)' }}>
+                  Última justificativa registrada: “{drawerBudget.notaGovernanca}”
+                </div>
+              )}
+            </div>
           )}
           <div className="form-group">
             <label className="form-label">Categoria</label>
