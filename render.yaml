@@ -1,0 +1,19 @@
+# Render Blueprint — Static Site do front (React + Vite).
+# Uso: conectar o repo hialth/web no Render e criar com "type: Blueprint".
+# VITE_API_URL vira o endereço absoluto da API (precisa existir antes do build).
+
+services:
+  - type: web
+    name: yeldify-web
+    runtime: static
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://yeldify-api.onrender.com
